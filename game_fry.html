@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Belajar Membaca dan Menulis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 95%;
+            margin: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .game-card {
+            background: linear-gradient(145deg, #f8f9ff, #e6e9f0);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .game-card .icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .game-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .game-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .game-area {
+            display: none;
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .back-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #e55555;
+            transform: scale(1.05);
+        }
+
+        /* Game 1: Susun Kata */
+        .word-puzzle {
+            text-align: center;
+        }
+
+        .puzzle-word {
+            font-size: 2.5em;
+            color: #333;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f8ff;
+            border-radius: 15px;
+            border: 3px dashed #667eea;
+        }
+
+        .letter-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .letter-slot {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .letter-slot.filled {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .available-letters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .letter-btn {
+            width: 60px;
+            height: 60px;
+            background: #feca57;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .letter-btn:hover {
+            background: #ff9ff3;
+            transform: scale(1.1);
+        }
+
+        .letter-btn.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Game 2: Baca Kata */
+        .word-reading {
+            text-align: center;
+        }
+
+        .word-display {
+            font-size: 3em;
+            color: #333;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(145deg, #a8e6cf, #dcedc8);
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .option-btn {
+            padding: 20px;
+            font-size: 1.2em;
+            background: #ff9a9e;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: bold;
+        }
+
+        .option-btn:hover {
+            background: #ff6b6b;
+            transform: scale(1.05);
+        }
+
+        .option-btn.correct {
+            background: #4ecdc4;
+        }
+
+        .option-btn.wrong {
+            background: #ff6b6b;
+        }
+
+        /* Game 3: Menulis Kata */
+        .word-writing {
+            text-align: center;
+        }
+
+        .image-display {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: #f0f8ff;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+            border: 3px solid #667eea;
+        }
+
+        .writing-input {
+            font-size: 2em;
+            padding: 15px;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            text-align: center;
+            width: 300px;
+            max-width: 90%;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .check-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 20px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .check-btn:hover {
+            background: #45b7aa;
+            transform: scale(1.05);
+        }
+
+        .next-btn {
+            background: #feca57;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 20px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .next-btn:hover {
+            background: #ff9ff3;
+            transform: scale(1.05);
+        }
+
+        .score {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 15px;
+            border: 2px solid #feca57;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #d1f2eb;
+            color: #0e6b4a;
+            border: 2px solid #4ecdc4;
+        }
+
+        .feedback.wrong {
+            background: #fadbd8;
+            color: #922b21;
+            border: 2px solid #ff6b6b;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2em; }
+            .word-display { font-size: 2.5em; }
+            .puzzle-word { font-size: 2em; }
+            .letter-container { gap: 5px; }
+            .letter-slot, .letter-btn { width: 50px; height: 50px; font-size: 1.3em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌟 Belajar Membaca & Menulis 🌟</h1>
+            <p>Permainan Seru untuk Kelas 1-2 SD</p>
+        </div>
+
+        <div id="menu" class="menu">
+            <div class="game-card" onclick="startGame('puzzle')">
+                <span class="icon">🧩</span>
+                <h3>Susun Kata</h3>
+                <p>Susun huruf-huruf menjadi kata yang benar</p>
+            </div>
+            <div class="game-card" onclick="startGame('reading')">
+                <span class="icon">👀</span>
+                <h3>Baca Kata</h3>
+                <p>Pilih gambar yang sesuai dengan kata</p>
+            </div>
+            <div class="game-card" onclick="startGame('writing')">
+                <span class="icon">✏️</span>
+                <h3>Tulis Kata</h3>
+                <p>Tulis nama dari gambar yang ditampilkan</p>
+            </div>
+        </div>
+
+        <div id="game1" class="game-area word-puzzle">
+            <button class="back-btn" onclick="showMenu()">⬅️ Kembali</button>
+            <div class="score">🏆 Skor: <span id="score1">0</span>/10</div>
+            <div class="puzzle-word" id="puzzleHint">KUCING</div>
+            <div class="letter-container" id="letterSlots"></div>
+            <div class="available-letters" id="availableLetters"></div>
+            <div class="feedback" id="feedback1"></div>
+            <button class="next-btn" onclick="nextPuzzle()" id="nextPuzzleBtn" style="display:none;">Soal Berikutnya 🎯</button>
+        </div>
+
+        <div id="game2" class="game-area word-reading">
+            <button class="back-btn" onclick="showMenu()">⬅️ Kembali</button>
+            <div class="score">🏆 Skor: <span id="score2">0</span>/10</div>
+            <div class="word-display" id="wordDisplay">BUKU</div>
+            <div class="options-container" id="optionsContainer"></div>
+            <div class="feedback" id="feedback2"></div>
+        </div>
+
+        <div id="game3" class="game-area word-writing">
+            <button class="back-btn" onclick="showMenu()">⬅️ Kembali</button>
+            <div class="score">🏆 Skor: <span id="score3">0</span>/10</div>
+            <div class="image-display" id="imageDisplay">🐱</div>
+            <input type="text" class="writing-input" id="writingInput" placeholder="Tulis kata di sini...">
+            <br>
+            <button class="check-btn" onclick="checkWriting()">Periksa Jawaban ✔️</button>
+            <button class="next-btn" onclick="nextWriting()" id="nextWritingBtn" style="display:none;">Soal Berikutnya 🎯</button>
+            <div class="feedback" id="feedback3"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data soal untuk setiap permainan
+        const puzzleWords = [
+            { word: "KUCING", hint: "🐱 Hewan berkaki empat yang suka mengeong" },
+            { word: "BUKU", hint: "📖 Alat untuk membaca dan belajar" },
+            { word: "MEJA", hint: "🪑 Tempat untuk belajar dan makan" },
+            { word: "BUNGA", hint: "🌸 Tumbuhan yang indah dan wangi" },
+            { word: "MOBIL", hint: "🚗 Kendaraan beroda empat" },
+            { word: "RUMAH", hint: "🏠 Tempat tinggal keluarga" },
+            { word: "SAPI", hint: "🐄 Hewan yang memberikan susu" },
+            { word: "POHON", hint: "🌳 Tumbuhan besar yang rindang" },
+            { word: "IKAN", hint: "🐟 Hewan yang hidup di air" },
+            { word: "BOLA", hint: "⚽ Mainan bulat untuk bermain" }
+        ];
+
+        const readingWords = [
+            { word: "BUKU", options: ["📖", "✏️", "🖍️", "📏"], correct: 0 },
+            { word: "KUCING", options: ["🐶", "🐱", "🐰", "🐭"], correct: 1 },
+            { word: "MOBIL", options: ["🚲", "🛴", "🚗", "🚌"], correct: 2 },
+            { word: "BUNGA", options: ["🌸", "🌿", "🌳", "🍃"], correct: 0 },
+            { word: "IKAN", options: ["🐸", "🐟", "🦋", "🐛"], correct: 1 },
+            { word: "RUMAH", options: ["🏫", "🏪", "🏠", "🏢"], correct: 2 },
+            { word: "MATAHARI", options: ["🌙", "⭐", "☀️", "☁️"], correct: 2 },
+            { word: "SEPATU", options: ["👟", "👒", "🧦", "👕"], correct: 0 },
+            { word: "APEL", options: ["🍌", "🍎", "🍊", "🍇"], correct: 1 },
+            { word: "PESAWAT", options: ["🚁", "✈️", "🚢", "🚂"], correct: 1 }
+        ];
+
+        const writingWords = [
+            { image: "🐱", answer: "KUCING" },
+            { image: "📖", answer: "BUKU" },
+            { image: "🚗", answer: "MOBIL" },
+            { image: "🌸", answer: "BUNGA" },
+            { image: "🐟", answer: "IKAN" },
+            { image: "🏠", answer: "RUMAH" },
+            { image: "☀️", answer: "MATAHARI" },
+            { image: "👟", answer: "SEPATU" },
+            { image: "🍎", answer: "APEL" },
+            { image: "✈️", answer: "PESAWAT" }
+        ];
+
+        let currentGame = '';
+        let currentIndex = 0;
+        let scores = { puzzle: 0, reading: 0, writing: 0 };
+        let currentWord = '';
+        let selectedSlot = null;
+
+        function showMenu() {
+            document.getElementById('menu').style.display = 'grid';
+            document.querySelectorAll('.game-area').forEach(area => {
+                area.classList.remove('active');
+            });
+            resetGame();
+        }
+
+        function startGame(gameType) {
+            document.getElementById('menu').style.display = 'none';
+            currentGame = gameType;
+            currentIndex = 0;
+            scores[gameType] = 0;
+            
+            if (gameType === 'puzzle') {
+                document.getElementById('game1').classList.add('active');
+                loadPuzzle();
+            } else if (gameType === 'reading') {
+                document.getElementById('game2').classList.add('active');
+                loadReading();
+            } else if (gameType === 'writing') {
+                document.getElementById('game3').classList.add('active');
+                loadWriting();
+            }
+        }
+
+        function resetGame() {
+            currentGame = '';
+            currentIndex = 0;
+            selectedSlot = null;
+            // Reset semua feedback
+            document.querySelectorAll('.feedback').forEach(f => {
+                f.textContent = '';
+                f.className = 'feedback';
+            });
+        }
+
+        // Game 1: Susun Kata
+        function loadPuzzle() {
+            if (currentIndex >= puzzleWords.length) {
+                showGameComplete('puzzle');
+                return;
+            }
+
+            const puzzle = puzzleWords[currentIndex];
+            currentWord = puzzle.word;
+            
+            document.getElementById('puzzleHint').innerHTML = puzzle.hint;
+            document.getElementById('score1').textContent = scores.puzzle;
+            document.getElementById('feedback1').textContent = '';
+            document.getElementById('feedback1').className = 'feedback';
+            document.getElementById('nextPuzzleBtn').style.display = 'block';
+
+            // Buat slot huruf
+            const slotsContainer = document.getElementById('letterSlots');
+            slotsContainer.innerHTML = '';
+            for (let i = 0; i < currentWord.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                slot.onclick = () => selectSlot(i);
+                slotsContainer.appendChild(slot);
+            }
+
+            // Buat huruf acak
+            const letters = currentWord.split('');
+            const shuffledLetters = [...letters].sort(() => Math.random() - 0.5);
+            
+            const lettersContainer = document.getElementById('availableLetters');
+            lettersContainer.innerHTML = '';
+            shuffledLetters.forEach((letter, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'letter-btn';
+                btn.textContent = letter;
+                btn.onclick = () => placeLetter(letter, index);
+                lettersContainer.appendChild(btn);
+            });
+        }
+
+        function selectSlot(index) {
+            document.querySelectorAll('.letter-slot').forEach((slot, i) => {
+                slot.style.border = i === index ? '3px solid #ff6b6b' : '3px solid #667eea';
+            });
+            selectedSlot = index;
+        }
+
+        function placeLetter(letter, btnIndex) {
+            if (selectedSlot === null) {
+                alert('Pilih kotak huruf terlebih dahulu!');
+                return;
+            }
+
+            const slots = document.querySelectorAll('.letter-slot');
+            const buttons = document.querySelectorAll('.letter-btn');
+            
+            if (slots[selectedSlot].textContent === '') {
+                slots[selectedSlot].textContent = letter;
+                slots[selectedSlot].classList.add('filled');
+                buttons[btnIndex].classList.add('used');
+                buttons[btnIndex].disabled = true;
+                
+                checkPuzzleComplete();
+            }
+        }
+
+        function checkPuzzleComplete() {
+            const slots = document.querySelectorAll('.letter-slot');
+            let userWord = '';
+            let allFilled = true;
+            
+            slots.forEach(slot => {
+                if (slot.textContent === '') {
+                    allFilled = false;
+                } else {
+                    userWord += slot.textContent;
+                }
+            });
+
+            if (allFilled) {
+                const feedback = document.getElementById('feedback1');
+                if (userWord === currentWord) {
+                    scores.puzzle++;
+                    feedback.textContent = '🎉 Benar! Hebat sekali!';
+                    feedback.className = 'feedback correct';
+                    document.getElementById('nextPuzzleBtn').style.display = 'inline-block';
+                } else {
+                    feedback.textContent = '❌ Belum benar, coba lagi!';
+                    feedback.className = 'feedback wrong';
+                    setTimeout(resetPuzzle, 2000);
+                }
+                document.getElementById('score1').textContent = scores.puzzle;
+            }
+        }
+
+        function resetPuzzle() {
+            document.querySelectorAll('.letter-slot').forEach(slot => {
+                slot.textContent = '';
+                slot.classList.remove('filled');
+                slot.style.border = '3px solid #667eea';
+            });
+            document.querySelectorAll('.letter-btn').forEach(btn => {
+                btn.classList.remove('used');
+                btn.disabled = false;
+            });
+            selectedSlot = null;
+            document.getElementById('feedback1').textContent = '';
+            document.getElementById('feedback1').className = 'feedback';
+        }
+
+        function nextPuzzle() {
+            currentIndex++;
+            loadPuzzle();
+        }
+
+        // Game 2: Baca Kata
+        function loadReading() {
+            if (currentIndex >= readingWords.length) {
+                showGameComplete('reading');
+                return;
+            }
+
+            const reading = readingWords[currentIndex];
+            document.getElementById('wordDisplay').textContent = reading.word;
+            document.getElementById('score2').textContent = scores.reading;
+            document.getElementById('feedback2').textContent = '';
+            document.getElementById('feedback2').className = 'feedback';
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            reading.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkReading(index, reading.correct);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkReading(selected, correct) {
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedback = document.getElementById('feedback2');
+            
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === correct) {
+                    btn.className = 'option-btn correct';
+                } else if (index === selected && index !== correct) {
+                    btn.className = 'option-btn wrong';
+                }
+            });
+
+            if (selected === correct) {
+                scores.reading++;
+                feedback.textContent = '🎉 Benar! Pintar sekali!';
+                feedback.className = 'feedback correct';
+            } else {
+                feedback.textContent = '❌ Salah, jawaban yang benar adalah ' + buttons[correct].textContent;
+                feedback.className = 'feedback wrong';
+            }
+            
+            document.getElementById('score2').textContent = scores.reading;
+            setTimeout(() => {
+                currentIndex++;
+                loadReading();
+            }, 2500);
+        }
+
+        // Game 3: Menulis Kata
+        function loadWriting() {
+            if (currentIndex >= writingWords.length) {
+                showGameComplete('writing');
+                return;
+            }
+
+            const writing = writingWords[currentIndex];
+            document.getElementById('imageDisplay').textContent = writing.image;
+            document.getElementById('writingInput').value = '';
+            document.getElementById('score3').textContent = scores.writing;
+            document.getElementById('feedback3').textContent = '';
+            document.getElementById('feedback3').className = 'feedback';
+            document.getElementById('nextWritingBtn').style.display = 'none';
+        }
+
+        function checkWriting() {
+            const input = document.getElementById('writingInput').value.toUpperCase().trim();
+            const correct = writingWords[currentIndex].answer;
+            const feedback = document.getElementById('feedback3');
+
+            if (input === correct) {
+                scores.writing++;
+                feedback.textContent = '🎉 Benar! Tulisan kamu bagus!';
+                feedback.className = 'feedback correct';
+                document.getElementById('nextWritingBtn').style.display = 'inline-block';
+            } else {
+                feedback.textContent = '❌ Belum benar. Jawaban yang benar: ' + correct;
+                feedback.className = 'feedback wrong';
+                setTimeout(() => {
+                    document.getElementById('writingInput').value = '';
+                    feedback.textContent = '';
+                    feedback.className = 'feedback';
+                }, 3000);
+            }
+            
+            document.getElementById('score3').textContent = scores.writing;
+        }
+
+        function nextWriting() {
+            currentIndex++;
+            loadWriting();
+        }
+
+        function showGameComplete(gameType) {
+            const gameNames = {
+                'puzzle': 'Susun Kata',
+                'reading': 'Baca Kata', 
+                'writing': 'Tulis Kata'
+            };
+            
+            const score = scores[gameType];
+            let message = '';
+            let emoji = '';
+            
+            if (score >= 8) {
+                message = 'Luar biasa! Kamu sangat pintar!';
+                emoji = '🏆🌟';
+            } else if (score >= 6) {
+                message = 'Bagus sekali! Terus belajar ya!';
+                emoji = '👍✨';
+            } else if (score >= 4) {
+                message = 'Lumayan! Kamu bisa lebih baik lagi!';
+                emoji = '😊💪';
+            } else {
+                message = 'Tidak apa-apa, coba lagi ya!';
+                emoji = '🤗💕';
+            }
+
+            alert(`${emoji}\n\nPermainan ${gameNames[gameType]} Selesai!\n\nSkor: ${score}/10\n${message}\n\nKlik OK untuk kembali ke menu utama.`);
+            showMenu();
+        }
+
+        // Event listener untuk input writing
+        document.getElementById('writingInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkWriting();
+            }
+        });
+
+        // Inisialisasi
+        showMenu();
+    </script>
+</body>
+</html>
