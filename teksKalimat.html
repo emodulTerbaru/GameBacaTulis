@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Susun Kalimat - Drag and Drop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #FFE5B4 0%, #PEACHPUFF 50%, #FFB6C1 100%);
+            min-height: 100vh;
+            padding: 20px;
+            animation: backgroundShift 10s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background: linear-gradient(135deg, #FFE5B4 0%, #PEACHPUFF 50%, #FFB6C1 100%); }
+            50% { background: linear-gradient(135deg, #E6E6FA 0%, #DDA0DD 50%, #98FB98 100%); }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #FF6B6B;
+            text-shadow: 3px 3px 0px #fff, 6px 6px 0px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            animation: titleBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes titleBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(45deg, #FFE5B4, #F0E68C);
+            padding: 15px 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .score-board {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #FF6B6B;
+        }
+
+        .level-info {
+            font-size: 1.1em;
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        .mascot {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #FFB6C1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            animation: mascotWave 3s ease-in-out infinite;
+        }
+
+        @keyframes mascotWave {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(5deg) scale(1.1); }
+            75% { transform: rotate(-5deg) scale(1.1); }
+        }
+
+        .game-area {
+            background: #F8F9FA;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 3px dashed #DDD;
+        }
+
+        .sentence-instruction {
+            text-align: center;
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .drop-zone {
+            min-height: 80px;
+            background: rgba(255,255,255,0.8);
+            border: 3px dashed #4ECDC4;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: #FF6B6B;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+
+        .drop-zone.completed {
+            background: rgba(50, 205, 50, 0.2);
+            border-color: #32CD32;
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.5);
+        }
+
+        .placeholder-text {
+            color: #999;
+            font-style: italic;
+            font-size: 1.2em;
+            user-select: none;
+        }
+
+        .word-bank {
+            background: linear-gradient(135deg, #E6E6FA, #F0E68C);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .word-bank-title {
+            text-align: center;
+            font-size: 1.3em;
+            color: #7B68EE;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .words-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .word-item {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: grab;
+            user-select: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .word-item::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .word-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .word-item:hover::before {
+            opacity: 1;
+            animation: shine 0.6s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .word-item:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+
+        .word-item.dragging {
+            opacity: 0.7;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+
+        .word-item.used {
+            opacity: 0.5;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        .dropped-word {
+            background: linear-gradient(45deg, #4ECDC4, #6ED5CE);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: dropAnimation 0.5s ease-out;
+        }
+
+        @keyframes dropAnimation {
+            0% { transform: scale(0) rotate(180deg); opacity: 0; }
+            50% { transform: scale(1.2) rotate(90deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .dropped-word:hover {
+            transform: scale(1.05);
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-check {
+            background: linear-gradient(45deg, #32CD32, #98FB98);
+        }
+
+        .btn-reset {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+        }
+
+        .btn-next {
+            background: linear-gradient(45deg, #4169E1, #6495ED);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 20px 0;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s ease;
+        }
+
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback.correct {
+            background: linear-gradient(45deg, #98FB98, #90EE90);
+            color: #006400;
+            animation: correctPulse 0.6s ease-in-out;
+        }
+
+        .feedback.incorrect {
+            background: linear-gradient(45deg, #FFB6C1, #FFC0CB);
+            color: #DC143C;
+            animation: incorrectShake 0.6s ease-in-out;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .progress-bar {
+            background: #E0E0E0;
+            height: 12px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #32CD32, #98FB98);
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            .title {
+                font-size: 2em;
+            }
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .words-container {
+                gap: 8px;
+            }
+            .word-item {
+                padding: 10px 15px;
+                font-size: 1.1em;
+            }
+            .controls {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🎯 Game Susun Kalimat</h1>
+            <p class="subtitle">Seret kata-kata untuk membuat kalimat yang benar!</p>
+        </div>
+
+        <div class="game-info">
+            <div class="score-board">
+                🏆 Skor: <span id="score">0</span>
+            </div>
+            <div class="mascot">🦝</div>
+            <div class="level-info">
+                Level <span id="level">1</span> / <span id="totalLevels">5</span>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="game-area">
+            <div class="sentence-instruction" id="instruction">
+                Susun kata-kata ini menjadi kalimat: "Kucing makan ikan"
+            </div>
+            
+            <div class="drop-zone" id="dropZone">
+                <span class="placeholder-text" id="placeholder">Seret kata-kata ke sini...</span>
+            </div>
+
+            <div class="word-bank">
+                <div class="word-bank-title">🎪 Bank Kata</div>
+                <div class="words-container" id="wordsContainer">
+                    <!-- Words akan diisi dengan JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-check" onclick="checkAnswer()">✅ Periksa Jawaban</button>
+            <button class="btn btn-reset" onclick="resetLevel()">🔄 Ulangi</button>
+            <button class="btn btn-next" onclick="nextLevel()" style="display: none;" id="nextBtn">➡️ Level Berikutnya</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        // Data level permainan
+        const levels = [
+            {
+                instruction: 'Susun kata-kata ini menjadi kalimat: "Kucing makan ikan"',
+                correctSentence: "Kucing makan ikan",
+                words: ["Kucing", "makan", "ikan", "burung", "minum"]
+            },
+            {
+                instruction: 'Susun kata-kata ini menjadi kalimat: "Anak bermain bola"',
+                correctSentence: "Anak bermain bola",
+                words: ["Anak", "bermain", "bola", "tidur", "lari"]
+            },
+            {
+                instruction: 'Susun kata-kata ini menjadi kalimat: "Ibu memasak nasi"',
+                correctSentence: "Ibu memasak nasi",
+                words: ["Ibu", "memasak", "nasi", "Ayah", "minum"]
+            },
+            {
+                instruction: 'Susun kata-kata ini menjadi kalimat: "Burung terbang tinggi"',
+                correctSentence: "Burung terbang tinggi",
+                words: ["Burung", "terbang", "tinggi", "rendah", "jatuh"]
+            },
+            {
+                instruction: 'Susun kata-kata ini menjadi kalimat: "Adik membaca buku"',
+                correctSentence: "Adik membaca buku",
+                words: ["Adik", "membaca", "buku", "Kakak", "menulis"]
+            }
+        ];
+
+        // State permainan
+        let currentLevel = 0;
+        let score = 0;
+        let droppedWords = [];
+        let draggedElement = null;
+
+        // Inisialisasi permainan
+        function initGame() {
+            document.getElementById('totalLevels').textContent = levels.length;
+            loadLevel(currentLevel);
+            updateProgress();
+        }
+
+        // Load level baru
+        function loadLevel(levelIndex) {
+            if (levelIndex >= levels.length) {
+                gameComplete();
+                return;
+            }
+
+            const level = levels[levelIndex];
+            
+            // Update UI
+            document.getElementById('level').textContent = levelIndex + 1;
+            document.getElementById('instruction').textContent = level.instruction;
+            
+            // Reset drop zone
+            const dropZone = document.getElementById('dropZone');
+            dropZone.innerHTML = '<span class="placeholder-text" id="placeholder">Seret kata-kata ke sini...</span>';
+            dropZone.classList.remove('completed');
+            
+            // Load words
+            loadWords(level.words);
+            
+            // Reset state
+            droppedWords = [];
+            hideFeedback();
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        // Load kata-kata ke bank kata
+        function loadWords(words) {
+            const container = document.getElementById('wordsContainer');
+            container.innerHTML = '';
+            
+            // Shuffle words untuk variasi
+            const shuffledWords = [...words].sort(() => Math.random() - 0.5);
+            
+            shuffledWords.forEach(word => {
+                const wordElement = createWordElement(word);
+                container.appendChild(wordElement);
+            });
+        }
+
+        // Buat elemen kata
+        function createWordElement(word) {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'word-item';
+            wordDiv.textContent = word;
+            wordDiv.draggable = true;
+            
+            // Event listeners untuk drag and drop
+            wordDiv.addEventListener('dragstart', handleDragStart);
+            wordDiv.addEventListener('dragend', handleDragEnd);
+            
+            // Touch events untuk mobile
+            wordDiv.addEventListener('touchstart', handleTouchStart);
+            wordDiv.addEventListener('touchmove', handleTouchMove);
+            wordDiv.addEventListener('touchend', handleTouchEnd);
+            
+            return wordDiv;
+        }
+
+        // Drag and Drop event handlers
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.outerHTML);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        // Drop zone events
+        const dropZone = document.getElementById('dropZone');
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', handleDrop);
+
+        function handleDrop(e) {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            if (draggedElement) {
+                addWordToSentence(draggedElement.textContent);
+                draggedElement.classList.add('used');
+                draggedElement = null;
+            }
+        }
+
+        // Tambahkan kata ke kalimat
+        function addWordToSentence(word) {
+            // Hapus placeholder jika ada
+            const placeholder = document.getElementById('placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            // Buat elemen kata yang dijatuhkan
+            const droppedWord = document.createElement('span');
+            droppedWord.className = 'dropped-word';
+            droppedWord.textContent = word;
+            droppedWord.onclick = () => removeWordFromSentence(droppedWord, word);
+            
+            dropZone.appendChild(droppedWord);
+            droppedWords.push(word);
+
+            // Efek suara (simulasi dengan console)
+            playSound('drop');
+        }
+
+        // Hapus kata dari kalimat
+        function removeWordFromSentence(element, word) {
+            element.remove();
+            droppedWords = droppedWords.filter(w => w !== word);
+            
+            // Kembalikan kata ke bank kata
+            const wordElements = document.querySelectorAll('.word-item');
+            wordElements.forEach(el => {
+                if (el.textContent === word) {
+                    el.classList.remove('used');
+                }
+            });
+
+            // Tampilkan placeholder jika drop zone kosong
+            if (droppedWords.length === 0) {
+                dropZone.innerHTML = '<span class="placeholder-text" id="placeholder">Seret kata-kata ke sini...</span>';
+            }
+        }
+
+        // Periksa jawaban
+        function checkAnswer() {
+            const currentSentence = droppedWords.join(' ');
+            const correctSentence = levels[currentLevel].correctSentence;
+            
+            if (currentSentence === correctSentence) {
+                // Jawaban benar
+                score += 100;
+                document.getElementById('score').textContent = score;
+                dropZone.classList.add('completed');
+                
+                showFeedback('Benar! Kalimat sudah sempurna! 🎉', 'correct');
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                
+                // Konfetti effect
+                createConfetti();
+                playSound('correct');
+                
+            } else {
+                // Jawaban salah
+                showFeedback('Belum tepat, coba lagi! 🤔', 'incorrect');
+                playSound('incorrect');
+            }
+        }
+
+        // Tampilkan feedback
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type} show`;
+        }
+
+        // Sembunyikan feedback
+        function hideFeedback() {
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback';
+        }
+
+        // Reset level
+        function resetLevel() {
+            // Reset semua kata di bank kata
+            document.querySelectorAll('.word-item').forEach(el => {
+                el.classList.remove('used');
+            });
+            
+            // Reset drop zone
+            const dropZone = document.getElementById('dropZone');
+            dropZone.innerHTML = '<span class="placeholder-text" id="placeholder">Seret kata-kata ke sini...</span>';
+            dropZone.classList.remove('completed');
+            
+            // Reset state
+            droppedWords = [];
+            hideFeedback();
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        // Level berikutnya
+        function nextLevel() {
+            currentLevel++;
+            loadLevel(currentLevel);
+            updateProgress();
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = ((currentLevel + 1) / levels.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // Game complete
+        function gameComplete() {
+            showFeedback('🎊 Selamat! Kamu telah menyelesaikan semua level! 🎊', 'correct');
+            createMegaConfetti();
+            
+            // Text-to-speech congratulation
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('Selamat! Kamu sangat pintar! Semua kalimat sudah benar!');
+                utterance.lang = 'id-ID';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Efek konfetti
+        function createConfetti() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    confetti.innerHTML = ['🎉', '🎊', '⭐', '🌟', '💫'][Math.floor(Math.random() * 5)];
+                    document.body.appendChild(confetti);
+                    
+                    confetti.animate([
+                        { transform: 'translateY(-10vh) rotate(0deg)', opacity: 1 },
+                        { transform: 'translateY(100vh) rotate(360deg)', opacity: 0 }
+                    ], {
+                        duration: 3000,
+                        easing: 'ease-in-out'
+                    }).onfinish = () => confetti.remove();
+                }, i * 100);
+            }
+        }
+
+        // Mega konfetti untuk game complete
+        function createMegaConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    createConfetti();
+                }, i * 100);
+            }
+        }
+
+        // Simulasi efek suara
+        function playSound(type) {
+            // Dalam implementasi nyata, ini akan memutar file audio
+            console.log(`Playing sound: ${type}`);
+        }
+
+        // Touch events untuk mobile
+        let touchStartX, touchStartY;
+
+        function handleTouchStart(e) {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (draggedElement) {
+                const touch = e.touches[0];
+                draggedElement.style.position = 'fixed';
+                draggedElement.style.zIndex = '1000';
+                draggedElement.style.left = touch.clientX - 50 + 'px';
+                draggedElement.style.top = touch.clientY - 25 + 'px';
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (draggedElement) {
+                const touch = e.changedTouches[0];
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                // Reset position
+                draggedElement.style.position = '';
+                draggedElement.style.zIndex = '';
+                draggedElement.style.left = '';
+                draggedElement.style.top = '';
+                draggedElement.classList.remove('dragging');
+                
+                // Check if dropped on drop zone
+                if (elementBelow === dropZone || dropZone.contains(elementBelow)) {
+                    addWordToSentence(draggedElement.textContent);
+                    draggedElement.classList.add('used');
+                }
+                
+                draggedElement = null;
+            }
+        }
+
+        // Inisialisasi permainan saat halaman dimuat
+        window.addEventListener('load', initGame);
+
+        // Keyboard accessibility
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.activeElement.classList.contains('word-item')) {
+                if (!document.activeElement.classList.contains('used')) {
+                    addWordToSentence(document.activeElement.textContent);
+                    document.activeElement.classList.add('used');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
